@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static",
+      "runtimeExecutable": "powershell.exe",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", "C:\\Users\\mello\\AppData\\Local\\Temp\\claude\\C--Users-mello-Downloads-entrega-app-entrega-app\\6e61f0f9-5f59-49ed-982a-01357ae162e4\\scratchpad\\static-server.ps1"
+      ],
+      "port": 8080
+    }
+  ]
+}

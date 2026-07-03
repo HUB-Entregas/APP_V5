@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Sem motorista logado, manda para a tela de login (aba separada).
+  if (!localStorage.getItem('motoristaSelecionado')) {
+    window.location.replace('./login.html');
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12203A">
+<title>Comprovante de Entrega</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="topo">
+  <h1>📦 Comprovante de Entrega</h1>
+  <div class="status-wrap">
+    <span id="statusDot" class="dot dot-offline"></span>
+    <span id="statusTexto">Carregando…</span>
+    <span id="badgePendentes" class="badge hidden">0</span>
+  </div>
+</header>
+
+<main>
+  <div id="aviso" class="aviso hidden"></div>
+
+  <form id="formEntrega">
+    <div class="campo">
+      <div class="eyebrow"><span class="num">01</span><label>Motorista</label></div>
+      <div id="motoristaAtual" class="motorista-atual">
+        <span id="motoristaAtualNome"></span>
+        <button type="button" id="trocarMotorista">Trocar</button>
+      </div>
+    </div>
+
+    <div class="campo">
+      <div class="eyebrow"><span class="num">02</span><label for="recebedor">Nome do recebedor</label></div>
+      <input type="text" id="recebedor" placeholder="Ex: João Silva" autocomplete="name" autocapitalize="words" required>
+    </div>
+
+    <div class="campo">
+      <div class="eyebrow"><span class="num">03</span><label>Foto do pacote</label></div>
+      <input type="file" id="fotoPacoteInput" accept="image/*" capture="environment" class="hidden">
+      <label for="fotoPacoteInput" class="btn-foto"><span id="fotoPacoteRotulo">Tirar foto do pacote</span></label>
+      <img id="fotoPacotePreview" class="foto-preview hidden" alt="Prévia da foto do pacote">
+    </div>
+
+    <div class="campo">
+      <div class="eyebrow"><span class="num">04</span><label>Foto da fachada</label></div>
+      <input type="file" id="fotoFachadaInput" accept="image/*" capture="environment" class="hidden">
+      <label for="fotoFachadaInput" class="btn-foto"><span id="fotoFachadaRotulo">Tirar foto da fachada</span></label>
+      <img id="fotoFachadaPreview" class="foto-preview hidden" alt="Prévia da foto da fachada">
+    </div>
+
+    <div class="campo">
+      <div class="eyebrow"><span class="num">05</span><label for="observacao">Observação (opcional)</label></div>
+      <textarea id="observacao" placeholder="Ex: entregue na portaria"></textarea>
+    </div>
+  </form>
+
+  <div class="secao-historico">
+    <div class="secao-historico-topo">
+      <h2>Últimos comprovantes</h2>
+      <button type="button" id="btnSincronizar">Sincronizar agora</button>
+    </div>
+    <div id="listaHistorico"></div>
+  </div>
+
+  <footer class="rodape-discreto">
+    <a href="./admin.html" target="_blank" rel="noopener">Painel do administrador</a>
+  </footer>
+</main>
+
+<div class="barra-envio">
+  <button type="submit" form="formEntrega" class="btn-enviar">Enviar comprovante</button>
+</div>
+
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

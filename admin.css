@@ -1,0 +1,180 @@
+.admin-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+/* --- login --- */
+.login-card {
+  max-width: 360px;
+  margin: 60px auto 0;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+}
+.login-card h2 { margin: 0 0 8px; font-size: 18px; }
+.login-card p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 18px; line-height: 1.4; }
+.login-card input[type="password"] {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+}
+.login-card .btn-enviar { padding: 13px; }
+.login-card .aviso { margin: 14px 0 0; text-align: left; }
+
+/* --- botão sair no topo --- */
+#btnSair {
+  background: none;
+  border: 1px solid rgba(247,247,243,0.35);
+  color: var(--paper);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#btnSair:hover { background: rgba(247,247,243,0.1); }
+
+/* --- toolbar --- */
+.painel-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.painel-toolbar input[type="text"] {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+.painel-toolbar button {
+  background: var(--steel);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+.contagem {
+  color: var(--ink-soft);
+  font-size: 13px;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* --- tabela --- */
+.tabela-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+}
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  text-align: left;
+  background: var(--paper-dim);
+  padding: 11px 14px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  border-bottom: 1.5px solid var(--line);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+tbody tr:hover { background: var(--paper-dim); }
+tbody a { color: var(--orange); font-weight: 700; text-decoration: none; }
+tbody a:hover { text-decoration: underline; }
+
+/* --- miniatura da foto --- */
+.miniatura {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1.5px solid var(--line);
+  cursor: pointer;
+  display: block;
+  background: var(--paper-dim);
+  transition: transform 0.1s;
+}
+.miniatura:hover { transform: scale(1.06); border-color: var(--steel); }
+
+/* --- modal de foto --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 32, 58, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+.modal-conteudo {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.modal-conteudo img {
+  max-width: 90vw;
+  max-height: 90vh;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.modal-fechar {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+/* --- botão finalizado --- */
+.btn-finalizar {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-finalizar:hover { border-color: var(--steel); color: var(--steel); }
+.btn-finalizar.is-finalizado {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+.btn-finalizar.is-finalizado:hover { opacity: 0.9; }
+.btn-finalizar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

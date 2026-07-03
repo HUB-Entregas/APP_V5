@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#12203A">
+<title>Painel do Administrador — Comprovantes de Entrega</title>
+<link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body class="admin-body">
+
+<header class="topo">
+  <h1>🗂️ Painel do Administrador</h1>
+  <button id="btnSair" class="hidden">Sair</button>
+</header>
+
+<main class="admin-main">
+
+  <section id="telaLogin" class="login-card">
+    <h2>Acesso restrito</h2>
+    <p>Informe a senha de administrador para ver os comprovantes registrados.</p>
+    <input type="password" id="senhaInput" placeholder="Senha de administrador" autocomplete="current-password">
+    <button id="btnEntrar" class="btn-enviar">Entrar</button>
+    <p id="loginErro" class="aviso hidden"></p>
+  </section>
+
+  <section id="telaPainel" class="hidden">
+    <div class="painel-toolbar">
+      <input type="text" id="busca" placeholder="Buscar por recebedor ou motorista…">
+      <button id="btnAtualizar">🔄 Atualizar</button>
+      <span id="contagem" class="contagem"></span>
+    </div>
+    <div class="tabela-wrap">
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Motorista</th>
+            <th>Recebedor</th>
+            <th>Observação</th>
+            <th>Pacote</th>
+            <th>Fachada</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpo"></tbody>
+      </table>
+    </div>
+    <p id="vazioAviso" class="vazio hidden">Nenhum comprovante encontrado.</p>
+  </section>
+
+  <div id="modalFoto" class="modal-overlay hidden">
+    <div class="modal-conteudo">
+      <button type="button" id="modalFechar" class="modal-fechar" aria-label="Fechar">✕</button>
+      <img id="modalImg" alt="Foto do comprovante">
+    </div>
+  </div>
+
+</main>
+
+<script src="./config.js"></script>
+<script src="./admin.js"></script>
+</body>
+</html>

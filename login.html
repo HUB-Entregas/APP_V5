@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Se este aparelho já tem um motorista lembrado, pula direto para o app
+  // (é o mesmo comportamento descrito no README: só pergunta uma vez).
+  if (localStorage.getItem('motoristaSelecionado')) {
+    window.location.replace('./index.html');
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12203A">
+<title>Login do Motorista — Comprovante de Entrega</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="topo">
+  <h1>📦 Comprovante de Entrega</h1>
+</header>
+
+<main>
+  <form id="formLogin" class="login-card">
+    <p class="motorista-escolha-texto">Quem está usando este aparelho hoje?</p>
+    <select id="motoristaSelect" class="login-campo" required>
+      <option value="" disabled selected>Selecione seu nome</option>
+    </select>
+    <input type="password" id="senhaInput" class="login-campo" placeholder="Senha" autocomplete="off" required>
+    <button type="submit" class="btn-enviar">Entrar</button>
+    <div id="aviso" class="aviso hidden"></div>
+  </form>
+</main>
+
+<script src="./config.js"></script>
+<script src="./login.js"></script>
+</body>
+</html>
