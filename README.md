@@ -218,6 +218,38 @@ administrador).
 
 ---
 
+## Relatório de desempenho (aba "Desempenho" — para a administração)
+
+Na própria planilha existe uma aba **"Desempenho"** que consolida o desempenho
+de **todos** os motoristas, para o controle da administração. Ela é gerada e
+formatada automaticamente pelo backend (`Code.gs`), com uma linha por motorista
+e as colunas:
+
+- **Hoje** — entregas do dia.
+- **Quinzena (01–15 / 16–fim)** — entregas na quinzena atual (as duas faixas
+  fixas do mês).
+- **Mês** — entregas no mês corrente.
+- **Total** — todas as entregas já registradas.
+- **Finalizadas** — quantas já foram marcadas como finalizadas no painel.
+- **Última entrega** — data/hora da entrega mais recente do motorista.
+
+Formatação: título com o mês, "Atualizado em…", cabeçalho fixo, linhas zebradas,
+totais no rodapé e destaque **🏆** para o líder da quinzena. Os motoristas são
+ordenados pela quinzena (maior primeiro).
+
+**Atualização automática:** a aba se atualiza sozinha conforme entram novas
+entregas (ou quando você finaliza um comprovante), no máximo **a cada ~10 min**
+para não pesar. Para criá-la/atualizá-la na hora, abra **Extensões → Apps
+Script**, escolha a função **`gerarRelatorioDesempenho`** e clique em **▶ Executar**
+(só na primeira vez ele pode pedir autorização). Se quiser que ela também
+atualize de tempos em tempos mesmo sem novas entregas, rode **uma vez** a função
+**`configurarRelatorioAutomatico`** (instala um gatilho a cada 30 min).
+
+> Lembre: como o `Code.gs` mudou, é preciso **republicar** a implantação
+> (Gerenciar implantações → editar → Nova versão → Implantar) para valer.
+
+---
+
 ## Limites e pontos de atenção
 
 - Cada motorista precisa **instalar o app na tela inicial** para o offline

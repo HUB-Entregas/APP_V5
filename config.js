@@ -9,7 +9,7 @@
 // uma confirmação simples pra evitar que alguém entre no nome errado.
 // ============================================================
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbynIU9FuuGiTFMu7lJBVZYaOtfpvyTNt1QwbpDA99VqeVpMf6Ex8SgKG_aPiVx94KGi/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbwLtGCY_46qVBnzMD5fJ87KOIT4WTQHZ1hv_52n5KjfJJpKYusHn9LAXjUstwpm1LQ/exec',
   TOKEN: 'HUB-ENTREGAS',
   // Só os NOMES dos motoristas ficam aqui (não é dado sensível — é o que
   // aparece na lista da tela de login). As SENHAS ficam no backend

@@ -35,6 +35,7 @@ var MOTORISTAS = {
 };
 
 var NOME_ABA = 'Entregas';
+var NOME_ABA_RELATORIO = 'Desempenho';
 var NOME_PASTA_DRIVE = 'Comprovantes de Entrega';
 var CABECALHO = ['Data/Hora', 'Motorista', 'Recebedor', 'Observações', 'Foto Pacote', 'Foto Fachada', 'ID', 'Finalizado'];
 
@@ -82,6 +83,7 @@ function doPost(e) {
       false
     ]);
 
+    atualizarRelatorioSeNecessario(); // mantém a aba "Desempenho" em dia
     return responder({ status: 'ok' });
   } catch (err) {
     return responder({ status: 'error', message: String(err) });
@@ -108,6 +110,7 @@ function marcarFinalizado(dados) {
   for (var i = 1; i < valores.length; i++) {
     if (String(valores[i][6]) === String(dados.id)) {
       aba.getRange(i + 1, 8).setValue(!!dados.valor); // coluna H = Finalizado
+      atualizarRelatorioSeNecessario(); // reflete a mudança no "Desempenho"
       return responder({ status: 'ok' });
     }
   }
@@ -207,4 +210,162 @@ function salvarImagem(base64, pasta, nomeBase) {
   var arquivo = pasta.createFile(blob);
   arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return arquivo.getUrl();
+}
+
+/* =====================================================================
+ * RELATÓRIO DE DESEMPENHO (aba "Desempenho") — para a administração
+ * ---------------------------------------------------------------------
+ * Uma aba separada, formatada, com o desempenho por motorista. Atualiza
+ * sozinha conforme entram entregas (no máximo a cada ~10 min, para não
+ * pesar). Você também pode:
+ *   - rodar gerarRelatorioDesempenho() para atualizar na hora;
+ *   - rodar configurarRelatorioAutomatico() uma vez para, além disso,
+ *     atualizar de tempos em tempos mesmo sem novas entregas.
+ * ===================================================================== */
+
+// Regera o relatório, mas no máximo uma vez a cada 10 min (evita refazer a
+// cada entrega quando o movimento é alto). Nunca derruba o envio se falhar.
+function atualizarRelatorioSeNecessario() {
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var ultimo = Number(props.getProperty('relatorio_ultimo') || 0);
+    if (Date.now() - ultimo < 10 * 60 * 1000) return;
+    gerarRelatorioDesempenho();
+    props.setProperty('relatorio_ultimo', String(Date.now()));
+  } catch (err) {
+    // relatório é secundário — nunca quebra o fluxo principal
+  }
+}
+
+// Instala um gatilho por tempo (a cada 30 min) e gera o relatório agora.
+// Rode UMA vez pelo editor do Apps Script (menu ▶) se quiser atualização
+// periódica mesmo em horários sem novas entregas.
+function configurarRelatorioAutomatico() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'gerarRelatorioDesempenho') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('gerarRelatorioDesempenho').timeBased().everyMinutes(30).create();
+  gerarRelatorioDesempenho();
+}
+
+function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+function gerarRelatorioDesempenho() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tz = ss.getSpreadsheetTimeZone();
+
+  var abaDados = ss.getSheetByName(NOME_ABA);
+  var dados = abaDados ? abaDados.getDataRange().getValues() : [];
+  if (dados.length) dados.shift(); // tira o cabeçalho
+
+  var agora = new Date();
+  var hojeStr = Utilities.formatDate(agora, tz, 'yyyy-MM-dd');
+  var ymAtual = hojeStr.substring(0, 7);
+  var diaAtual = parseInt(hojeStr.substring(8, 10), 10);
+  var quinzena = diaAtual <= 15 ? 1 : 2;
+  var iniQ = quinzena === 1 ? 1 : 16;
+  var fimQ = quinzena === 1 ? 15 : new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate();
+
+  // universo de motoristas: os cadastrados + quaisquer que apareçam nos dados
+  var stats = {};
+  function garantir(nome) {
+    if (!stats[nome]) stats[nome] = { hoje: 0, quinzena: 0, mes: 0, total: 0, finalizadas: 0, ultima: null };
+    return stats[nome];
+  }
+  Object.keys(MOTORISTAS).forEach(garantir);
+
+  for (var i = 0; i < dados.length; i++) {
+    var linha = dados[i];
+    var nome = linha[1];
+    if (!nome) continue;
+    var s = garantir(String(nome));
+    s.total++;
+    if (linha[7] === true || String(linha[7]).toLowerCase() === 'true') s.finalizadas++;
+
+    var d = linha[0] instanceof Date ? linha[0] : new Date(linha[0]);
+    if (!isNaN(d.getTime())) {
+      var ds = Utilities.formatDate(d, tz, 'yyyy-MM-dd');
+      var ym = ds.substring(0, 7);
+      var dia = parseInt(ds.substring(8, 10), 10);
+      if (ds === hojeStr) s.hoje++;
+      if (ym === ymAtual) {
+        s.mes++;
+        if ((quinzena === 1 && dia <= 15) || (quinzena === 2 && dia >= 16)) s.quinzena++;
+      }
+      if (!s.ultima || d.getTime() > s.ultima.getTime()) s.ultima = d;
+    }
+  }
+
+  // ordena por quinzena (desc) e, empate, por total (desc)
+  var nomes = Object.keys(stats).sort(function (a, b) {
+    return stats[b].quinzena - stats[a].quinzena || stats[b].total - stats[a].total;
+  });
+
+  var rotuloQuinzena = 'Quinzena (' + pad2(iniQ) + '–' + pad2(fimQ) + ')';
+  var cabecalho = ['Motorista', 'Hoje', rotuloQuinzena, 'Mês', 'Total', 'Finalizadas', 'Última entrega'];
+  var linhas = nomes.map(function (n) {
+    var s = stats[n];
+    return [n, s.hoje, s.quinzena, s.mes, s.total, s.finalizadas,
+      s.ultima ? Utilities.formatDate(s.ultima, tz, 'dd/MM/yyyy HH:mm') : '—'];
+  });
+  var tot = ['TOTAL', 0, 0, 0, 0, 0, ''];
+  linhas.forEach(function (l) { for (var c = 1; c <= 5; c++) tot[c] += l[c]; });
+
+  var nCols = cabecalho.length;
+  var LINHA_CAB = 4;
+
+  // (re)cria a aba limpa
+  var aba = ss.getSheetByName(NOME_ABA_RELATORIO);
+  if (!aba) aba = ss.insertSheet(NOME_ABA_RELATORIO);
+  aba.clear();
+  aba.getRange(1, 1, aba.getMaxRows(), Math.max(aba.getMaxColumns(), nCols)).breakApart();
+  aba.setTabColor('#12203A');
+
+  // título
+  var mesNome = Utilities.formatDate(agora, tz, 'MM/yyyy');
+  aba.getRange(1, 1, 1, nCols).merge()
+    .setValue('RELATÓRIO DE DESEMPENHO — ' + mesNome)
+    .setFontSize(14).setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#12203A')
+    .setHorizontalAlignment('center').setVerticalAlignment('middle');
+  aba.setRowHeight(1, 36);
+
+  // subtítulo
+  aba.getRange(2, 1, 1, nCols).merge()
+    .setValue('Atualizado em ' + Utilities.formatDate(agora, tz, 'dd/MM/yyyy HH:mm') +
+      '  ·  Quinzena atual: dia ' + iniQ + ' a ' + fimQ)
+    .setFontColor('#5B6B85').setFontStyle('italic').setHorizontalAlignment('center');
+
+  // cabeçalho da tabela
+  aba.getRange(LINHA_CAB, 1, 1, nCols).setValues([cabecalho])
+    .setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#2F4560')
+    .setHorizontalAlignment('center').setVerticalAlignment('middle');
+  aba.setRowHeight(LINHA_CAB, 28);
+
+  // dados
+  if (linhas.length) {
+    aba.getRange(LINHA_CAB + 1, 1, linhas.length, nCols).setValues(linhas);
+    // zebra
+    for (var r = 0; r < linhas.length; r++) {
+      if (r % 2 === 1) aba.getRange(LINHA_CAB + 1 + r, 1, 1, nCols).setBackground('#F7F7F3');
+    }
+    // formatação inteligente: destaca o líder da quinzena
+    if (linhas[0][2] > 0) {
+      aba.getRange(LINHA_CAB + 1, 1, 1, nCols).setBackground('#DFF3E7').setFontWeight('bold');
+      aba.getRange(LINHA_CAB + 1, 1).setValue('🏆 ' + linhas[0][0]);
+    }
+  }
+
+  // total
+  var linhaTot = LINHA_CAB + 1 + linhas.length;
+  aba.getRange(linhaTot, 1, 1, nCols).setValues([tot])
+    .setFontWeight('bold').setBackground('#ECEBE3');
+
+  // bordas + alinhamento dos números
+  aba.getRange(LINHA_CAB, 1, linhas.length + 2, nCols)
+    .setBorder(true, true, true, true, true, true, '#DEDCD2', SpreadsheetApp.BorderStyle.SOLID);
+  aba.getRange(LINHA_CAB, 2, linhas.length + 2, nCols - 1).setHorizontalAlignment('center');
+
+  aba.setFrozenRows(LINHA_CAB);
+  for (var c2 = 1; c2 <= nCols; c2++) aba.autoResizeColumn(c2);
+  if (aba.getColumnWidth(1) < 140) aba.setColumnWidth(1, 140);
 }
