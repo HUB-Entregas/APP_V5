@@ -2,6 +2,7 @@
 // a página, o administrador precisa entrar de novo. É intencional.
 let senhaAtual = null;
 let registrosCache = [];
+let listaRenderizada = []; // última lista mostrada na tabela (base p/ o modal)
 
 function el(id) { return document.getElementById(id); }
 
@@ -107,6 +108,7 @@ function botaoFinalizado(r) {
 }
 
 function renderTabela(lista) {
+  listaRenderizada = lista;
   const corpo = el('tabelaCorpo');
   const vazio = el('vazioAviso');
   el('contagem').textContent = `${lista.length} comprovante(s)`;
@@ -118,28 +120,84 @@ function renderTabela(lista) {
   }
   vazio.classList.add('hidden');
 
-  const linhas = lista.map((r) => `
+  const linhas = lista.map((r, i) => `
     <tr>
       <td>${formatarData(r.dataHora)}</td>
       <td>${escapeHtml(r.motorista)}</td>
       <td>${escapeHtml(r.recebedor)}</td>
       <td>${escapeHtml(r.observacao)}</td>
-      <td>${r.fotoPacoteImg ? `<img src="${escapeHtml(r.fotoPacoteImg)}" class="miniatura" data-foto="${escapeHtml(r.fotoPacoteImg)}" alt="Foto do pacote de ${escapeHtml(r.recebedor)}" loading="lazy">` : '—'}</td>
-      <td>${r.fotoFachadaImg ? `<img src="${escapeHtml(r.fotoFachadaImg)}" class="miniatura" data-foto="${escapeHtml(r.fotoFachadaImg)}" alt="Foto da fachada de ${escapeHtml(r.recebedor)}" loading="lazy">` : '—'}</td>
+      <td>${r.fotoPacoteImg ? `<img src="${escapeHtml(r.fotoPacoteImg)}" class="miniatura" data-idx="${i}" data-tipo="pacote" alt="Foto do pacote de ${escapeHtml(r.recebedor)}" loading="lazy">` : '—'}</td>
+      <td>${r.fotoFachadaImg ? `<img src="${escapeHtml(r.fotoFachadaImg)}" class="miniatura" data-idx="${i}" data-tipo="fachada" alt="Foto da fachada de ${escapeHtml(r.recebedor)}" loading="lazy">` : '—'}</td>
       <td>${botaoFinalizado(r)}</td>
     </tr>`).join('');
   corpo.innerHTML = linhas;
 }
 
-function abrirFoto(url) {
-  if (!url) return;
-  el('modalImg').src = url;
+// ---------- modal de fotos (galeria pacote/fachada + zoom) ----------
+let modalFotos = [];   // [{ url, legenda }] do comprovante aberto
+let modalIndice = 0;
+let zoom = 1, panX = 0, panY = 0;
+let arrastando = false, arrasteOrigem = null, arrastou = false;
+
+function abrirModal(registro, tipoInicial) {
+  modalFotos = [];
+  if (registro.fotoPacoteImg) modalFotos.push({ url: registro.fotoPacoteImg, legenda: 'Foto do pacote' });
+  if (registro.fotoFachadaImg) modalFotos.push({ url: registro.fotoFachadaImg, legenda: 'Foto da fachada' });
+  if (modalFotos.length === 0) return;
+
+  const inicial = modalFotos.findIndex((f) => f.legenda.toLowerCase().includes(tipoInicial));
+  modalIndice = inicial >= 0 ? inicial : 0;
+
+  el('modalRecebedor').textContent = registro.recebedor || '(sem recebedor)';
+  el('modalMeta').textContent = `${registro.motorista || '—'} · ${formatarData(registro.dataHora)}`;
+  const obs = el('modalObs');
+  obs.textContent = registro.observacao || '';
+  obs.classList.toggle('hidden', !registro.observacao);
+
+  mostrarFotoAtual();
   el('modalFoto').classList.remove('hidden');
+}
+
+function mostrarFotoAtual() {
+  const foto = modalFotos[modalIndice];
+  el('modalImg').src = foto.url;
+  el('modalLegenda').textContent = `${foto.legenda} — ${modalIndice + 1}/${modalFotos.length}`;
+  const temVarias = modalFotos.length > 1;
+  el('modalAnterior').classList.toggle('hidden', !temVarias);
+  el('modalProximo').classList.toggle('hidden', !temVarias);
+  resetarZoom();
+}
+
+function navegarFoto(delta) {
+  if (modalFotos.length < 2) return;
+  modalIndice = (modalIndice + delta + modalFotos.length) % modalFotos.length;
+  mostrarFotoAtual();
+}
+
+function resetarZoom() {
+  zoom = 1; panX = 0; panY = 0;
+  el('modalImg').classList.remove('is-zoom');
+  aplicarTransform();
+}
+
+function aplicarTransform() {
+  el('modalImg').style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+}
+
+function alternarZoom() {
+  if (zoom === 1) {
+    zoom = 2.5;
+    el('modalImg').classList.add('is-zoom');
+    aplicarTransform();
+  } else {
+    resetarZoom();
+  }
 }
 
 function fecharFoto() {
   el('modalFoto').classList.add('hidden');
   el('modalImg').src = '';
+  resetarZoom();
 }
 
 async function toggleFinalizado(id, novoValor) {
@@ -180,18 +238,52 @@ window.addEventListener('DOMContentLoaded', () => {
   // clique no botão alterna o status de finalizado
   el('tabelaCorpo').addEventListener('click', (e) => {
     const img = e.target.closest('.miniatura');
-    if (img) { abrirFoto(img.dataset.foto); return; }
+    if (img) {
+      const registro = listaRenderizada[Number(img.dataset.idx)];
+      if (registro) abrirModal(registro, img.dataset.tipo);
+      return;
+    }
     const btn = e.target.closest('.btn-finalizar');
     if (btn && !btn.disabled) {
       toggleFinalizado(btn.dataset.id, btn.dataset.finalizado !== 'true');
     }
   });
 
+  // --- controles do modal ---
   el('modalFechar').addEventListener('click', fecharFoto);
-  el('modalFoto').addEventListener('click', (e) => {
-    if (e.target === el('modalFoto')) fecharFoto(); // clicou fora da imagem
+  el('modalAnterior').addEventListener('click', () => navegarFoto(-1));
+  el('modalProximo').addEventListener('click', () => navegarFoto(1));
+
+  // clicar no fundo (fora da imagem/setas) fecha
+  el('modalPalco').addEventListener('click', (e) => {
+    if (e.target === el('modalPalco')) fecharFoto();
   });
+
+  // zoom por clique + arrastar para mover quando ampliado (mouse e toque)
+  const modalImg = el('modalImg');
+  modalImg.addEventListener('pointerdown', (e) => {
+    arrastando = true;
+    arrastou = false;
+    arrasteOrigem = { x: e.clientX - panX, y: e.clientY - panY };
+    modalImg.setPointerCapture(e.pointerId);
+  });
+  modalImg.addEventListener('pointermove', (e) => {
+    if (!arrastando || zoom === 1) return;
+    panX = e.clientX - arrasteOrigem.x;
+    panY = e.clientY - arrasteOrigem.y;
+    arrastou = true;
+    aplicarTransform();
+  });
+  modalImg.addEventListener('pointerup', () => {
+    arrastando = false;
+    if (!arrastou) alternarZoom(); // clique simples (sem arrastar) alterna o zoom
+  });
+
+  // teclado: Esc fecha, setas trocam de foto
   window.addEventListener('keydown', (e) => {
+    if (el('modalFoto').classList.contains('hidden')) return;
     if (e.key === 'Escape') fecharFoto();
+    else if (e.key === 'ArrowLeft') navegarFoto(-1);
+    else if (e.key === 'ArrowRight') navegarFoto(1);
   });
 });

@@ -38,11 +38,19 @@ function doPost(e) {
       return responder({ status: 'error', message: 'Dados incompletos' });
     }
 
+    var aba = obterOuCriarAba();
+
+    // Idempotência: se este ID já foi gravado antes, não grava de novo.
+    // Evita linha duplicada quando o celular reenvia um comprovante cuja
+    // resposta se perdeu na rede (ele continua "pendente" e tenta de novo).
+    if (dados.id && idJaExiste(aba, dados.id)) {
+      return responder({ status: 'ok', duplicado: true });
+    }
+
     var pasta = obterOuCriarPasta();
     var urlFotoPacote = dados.fotoPacote ? salvarImagem(dados.fotoPacote, pasta, 'pacote_' + dados.recebedor) : '';
     var urlFotoFachada = dados.fotoFachada ? salvarImagem(dados.fotoFachada, pasta, 'fachada_' + dados.recebedor) : '';
 
-    var aba = obterOuCriarAba();
     aba.appendRow([
       new Date(dados.timestamp || Date.now()),
       dados.motorista,
@@ -76,6 +84,15 @@ function marcarFinalizado(dados) {
     }
   }
   return responder({ status: 'error', message: 'Comprovante não encontrado' });
+}
+
+// Verifica se já existe uma linha com este ID (coluna G = índice 6).
+function idJaExiste(aba, id) {
+  var valores = aba.getDataRange().getValues();
+  for (var i = 1; i < valores.length; i++) {
+    if (String(valores[i][6]) === String(id)) return true;
+  }
+  return false;
 }
 
 function doGet(e) {

@@ -50,10 +50,24 @@
     <p id="vazioAviso" class="vazio hidden">Nenhum comprovante encontrado.</p>
   </section>
 
-  <div id="modalFoto" class="modal-overlay hidden">
-    <div class="modal-conteudo">
+  <div id="modalFoto" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-topo">
+      <div class="modal-dados">
+        <strong id="modalRecebedor"></strong>
+        <span id="modalMeta"></span>
+        <span id="modalObs" class="modal-obs hidden"></span>
+      </div>
       <button type="button" id="modalFechar" class="modal-fechar" aria-label="Fechar">✕</button>
-      <img id="modalImg" alt="Foto do comprovante">
+    </div>
+
+    <div id="modalPalco" class="modal-palco">
+      <button type="button" id="modalAnterior" class="modal-seta modal-seta-esq" aria-label="Foto anterior">‹</button>
+      <img id="modalImg" class="modal-img" alt="Foto do comprovante">
+      <button type="button" id="modalProximo" class="modal-seta modal-seta-dir" aria-label="Próxima foto">›</button>
+    </div>
+
+    <div class="modal-rodape">
+      <span id="modalLegenda" class="modal-legenda"></span>
     </div>
   </div>
 

@@ -9,7 +9,7 @@
 // uma confirmação simples pra evitar que alguém entre no nome errado.
 // ============================================================
 const CONFIG = {
-  API_URL: 'https://script.google.com/macros/s/AKfycbzqlDrBbNfteQODDygtsOTSxmU_ut0D89nb2NKCDkgJzYRwdeSVTfl7iQk6dCNpUWYU/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbynIU9FuuGiTFMu7lJBVZYaOtfpvyTNt1QwbpDA99VqeVpMf6Ex8SgKG_aPiVx94KGi/exec',
   TOKEN: 'HUB-ENTREGAS',
   MOTORISTAS: [
     { nome: 'Mello', senha: '0327' },
