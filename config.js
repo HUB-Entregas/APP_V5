@@ -11,14 +11,9 @@
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbynIU9FuuGiTFMu7lJBVZYaOtfpvyTNt1QwbpDA99VqeVpMf6Ex8SgKG_aPiVx94KGi/exec',
   TOKEN: 'HUB-ENTREGAS',
-  MOTORISTAS: [
-    { nome: 'Mello', senha: '0327' },
-    { nome: 'Vinicius', senha: '9205' },
-    { nome: 'Said', senha: '4771' },
-    { nome: 'Matheus Silva', senha: '5840' },
-    { nome: 'Joao', senha: '1551' },
-    { nome: 'Thales', senha: '5824' },
-    { nome: 'Bruno', senha: '1654' },
-    { nome: 'Pedro', senha: '3277' }
-  ]
+  // Só os NOMES dos motoristas ficam aqui (não é dado sensível — é o que
+  // aparece na lista da tela de login). As SENHAS ficam no backend
+  // (backend/Code.gs, mapa MOTORISTAS), conferidas no servidor no momento
+  // do login, para não ficarem visíveis neste arquivo público.
+  MOTORISTAS: ['Mello', 'Vinicius', 'Said', 'Matheus Silva', 'Joao', 'Thales', 'Bruno', 'Pedro']
 };

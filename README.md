@@ -46,6 +46,8 @@ Apps Script (gratuitos), e você exporta/sincroniza para Excel quando quiser.
    que só você vai saber (ex: `entregas2026x`). Faça o mesmo na linha
    `var ADMIN_SENHA = 'TROQUE_ESTA_SENHA_DE_ADMIN';` — use uma senha
    **diferente** da anterior, essa é a senha do painel de administrador.
+   No mapa `var MOTORISTAS = { ... }`, coloque o nome e a senha de cada
+   motorista (essas senhas ficam **só aqui no backend**, nunca no app).
 5. Clique em **Implantar → Nova implantação**.
    - Tipo: **App da Web**
    - Executar como: **Eu**
@@ -67,18 +69,17 @@ Abra o arquivo `app.js` e edite as 3 primeiras linhas úteis:
 const CONFIG = {
   API_URL: 'COLE_AQUI_A_URL_DO_APPS_SCRIPT',   // a URL do Passo 1.6
   TOKEN: 'TROQUE_ESTA_SENHA',                   // a MESMA senha do Code.gs
-  MOTORISTAS: [                                 // troque pelos nomes e senhas reais
-    { nome: 'Motorista 1', senha: '1111' },
-    { nome: 'Motorista 2', senha: '2222' },
-    { nome: 'Motorista 3', senha: '3333' }
-  ]
+  MOTORISTAS: ['Motorista 1', 'Motorista 2', 'Motorista 3'] // só os NOMES
 };
 ```
 
-> A senha de cada motorista só é conferida no próprio celular (contra essa
-> lista) — não passa pelo backend. Serve para o motorista confirmar a
-> própria identidade antes de usar o aparelho, não é uma autenticação de
-> servidor (veja "Limites e pontos de atenção" no fim deste arquivo).
+> Aqui ficam **só os nomes** dos motoristas (o que aparece na lista de login).
+> As **senhas** ficam no `backend/Code.gs` (mapa `MOTORISTAS`) e são conferidas
+> no servidor — assim não ficam visíveis neste arquivo, que é público. Como a
+> conferência é no backend, o **primeiro login de cada motorista precisa de
+> internet**; depois disso o aparelho lembra o motorista e não pede senha de
+> novo (só ao tocar em "Trocar"). Para adicionar um motorista, coloque o nome
+> aqui **e** a senha no `Code.gs`, e republique a implantação.
 
 ---
 
@@ -181,19 +182,41 @@ te ajudo a montar essa versão também.
 entrega-app/
 ├── index.html          → tela do app do motorista (comprovantes)
 ├── login.html            → tela de login do motorista (nome + senha)
-├── admin.html              → painel do administrador (login + tabela)
-├── styles.css                → visual do app do motorista e do login
-├── admin.css                    → visual do painel do administrador
-├── config.js                      → URL do backend, token, motoristas (nome+senha)
+├── relatorio.html          → relatório de desempenho do motorista (diário + quinzenal)
+├── admin.html                → painel do administrador (login + tabela)
+├── styles.css                  → visual do app do motorista, login e relatório
+├── admin.css                     → visual do painel do administrador
+├── config.js                       → URL do backend, token e lista de nomes dos motoristas
 ├── app.js                            → lógica do motorista: fila offline, câmera (2 fotos), sincronização
-├── login.js                            → lógica do login: escolher motorista e conferir senha
-├── admin.js                              → lógica do painel: login e listagem dos comprovantes
-├── sw.js                                    → service worker (cache offline, só no app do motorista)
-├── manifest.json                             → configuração do "instalar na tela inicial"
-├── icons/                                      → ícones do app
+├── login.js                            → lógica do login: escolher motorista e conferir senha (no backend)
+├── relatorio.js                          → lógica do relatório: conta as entregas locais por dia/quinzena
+├── admin.js                                → lógica do painel: login e listagem dos comprovantes
+├── sw.js                                     → service worker (cache offline, só no app do motorista)
+├── manifest.json                              → configuração do "instalar na tela inicial"
+├── icons/                                       → ícones do app
 └── backend/
-    └── Code.gs                                   → backend Google Apps Script (cole no Apps Script)
+    └── Code.gs                                    → backend Google Apps Script (cole no Apps Script)
 ```
+
+## Relatório de desempenho (do motorista)
+
+No rodapé da tela do motorista há o link **"📊 Meu desempenho"**, que abre uma
+página só de leitura com os números **daquele** motorista:
+
+- **Hoje:** total de entregas do dia.
+- **Quinzena atual:** total da quinzena, sempre nas duas faixas fixas do mês —
+  **1ª: dias 1 a 15** e **2ª: dia 16 até o fim do mês** — com o intervalo de
+  datas mostrado.
+- **Por dia:** uma lista com a contagem de cada dia da quinzena e uma barrinha
+  de volume, para ver os dias mais/menos movimentados.
+
+Os números são calculados **no próprio celular**, a partir da fila local de
+comprovantes — por isso é instantâneo, funciona **offline** e não depende do
+backend. Consequência: o relatório reflete as entregas feitas **naquele
+aparelho**. A fonte oficial e consolidada continua sendo a planilha (painel do
+administrador).
+
+---
 
 ## Limites e pontos de atenção
 
@@ -201,9 +224,16 @@ entrega-app/
   funcionar de forma confiável (principalmente no iPhone).
 - As fotos são comprimidas automaticamente antes de guardar/enviar, para não
   pesar no celular nem na sincronização.
-- O `TOKEN` é uma proteção simples contra spam na sua planilha — não é uma
-  autenticação de servidor. A senha individual de cada motorista (em
-  `config.js`) também é conferida só no aparelho, pelo mesmo motivo: serve
-  para confirmar que a pessoa certa está usando o celular, não substitui um
-  login de verdade. Para autenticação real por motorista, a próxima etapa
-  seria migrar para Power Apps ou um backend com autenticação.
+- As senhas dos motoristas são conferidas **no backend** (mapa `MOTORISTAS` no
+  `Code.gs`), então não ficam expostas no `config.js` público. Ainda assim, não
+  é um login forte: senhas curtas (ex: 4 dígitos) são fáceis de adivinhar por
+  tentativa e erro contra a rota de login — se precisar de mais segurança, use
+  senhas mais longas. Para autenticação real por motorista (sessão, bloqueio
+  após tentativas), a próxima etapa seria migrar para Power Apps ou um backend
+  com autenticação de verdade.
+- O `TOKEN` de escrita ainda fica no `config.js` público (é o que o app usa para
+  gravar comprovantes). Ele é uma proteção simples contra spam — escondê-lo por
+  completo exigiria autenticação por sessão, fora do escopo atual.
+- Se um comprovante falhar ao enviar várias vezes seguidas (já com internet), ele
+  aparece como **ERRO** (vermelho) no histórico do motorista, com a razão e um
+  botão **"Tentar de novo"** — em vez de ficar preso e invisível como "pendente".

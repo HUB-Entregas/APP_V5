@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Sem motorista logado, volta para o login (mesma proteção do index).
+  if (!localStorage.getItem('motoristaSelecionado')) {
+    window.location.replace('./login.html');
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12203A">
+<title>Meu desempenho — Comprovante de Entrega</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<header class="topo">
+  <h1>📊 Meu desempenho</h1>
+  <a href="./index.html" class="topo-voltar">← Voltar</a>
+</header>
+
+<main>
+  <p class="relatorio-motorista">Motorista: <strong id="relMotorista"></strong></p>
+
+  <div class="relatorio-cards">
+    <div class="rel-card">
+      <span class="rel-card-rotulo">Hoje (<span id="relDataHoje"></span>)</span>
+      <span class="rel-card-num" id="relHoje">0</span>
+      <span class="rel-card-sub">entregas</span>
+    </div>
+    <div class="rel-card">
+      <span class="rel-card-rotulo">Quinzena (<span id="relQuinzenaIntervalo"></span>)</span>
+      <span class="rel-card-num" id="relQuinzena">0</span>
+      <span class="rel-card-sub">entregas</span>
+    </div>
+  </div>
+
+  <div class="relatorio-detalhe">
+    <h2>Por dia — quinzena atual</h2>
+    <div id="relPorDia"></div>
+  </div>
+</main>
+
+<script src="./relatorio.js"></script>
+</body>
+</html>

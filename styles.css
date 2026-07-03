@@ -7,6 +7,7 @@
   --steel: #2F4560;
   --orange: #E8672B;
   --green: #2E9E5B;
+  --red: #C0392B;
   --radius: 10px;
 }
 
@@ -63,6 +64,7 @@ button, input, textarea {
 }
 .dot-online { background: var(--green); }
 .dot-offline { background: var(--orange); }
+.dot-erro { background: var(--red); }
 .badge {
   background: var(--orange);
   color: #fff;
@@ -111,7 +113,7 @@ main {
   flex-shrink: 0;
 }
 .eyebrow label {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -119,7 +121,7 @@ main {
 input[type="text"], textarea {
   width: 100%;
   font-size: 16px;
-  padding: 12px 14px;
+  padding: 14px;
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
   background: #fff;
@@ -129,6 +131,7 @@ textarea { min-height: 70px; resize: vertical; }
 input[type="text"]:focus, textarea:focus {
   outline: none;
   border-color: var(--steel);
+  box-shadow: 0 0 0 3px rgba(47, 69, 96, 0.12);
 }
 
 /* --- motorista --- */
@@ -181,28 +184,142 @@ input[type="text"]:focus, textarea:focus {
 .login-card .btn-enviar { padding: 13px; }
 .login-card .aviso { margin: 14px 0 0; }
 
-/* --- foto --- */
-.btn-foto {
-  display: block;
-  text-align: center;
-  padding: 16px;
-  border: 1.5px dashed var(--line);
+/* --- fotos da entrega (2 slots + botão de câmera) --- */
+.fotos-slots {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.foto-slot {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  border: 2px dashed var(--line);
   border-radius: var(--radius);
   background: #fff;
-  color: var(--steel);
-  font-weight: 700;
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
   cursor: pointer;
 }
-.foto-preview {
+.foto-slot-rotulo {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--steel);
+}
+.foto-slot-img {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.foto-slot-check {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+.foto-slot-cheio {
+  border-style: solid;
+  border-color: var(--green);
+}
+.foto-slot-cheio .foto-slot-img { display: block; }
+.foto-slot-cheio .foto-slot-check { display: flex; }
+.foto-slot-cheio .foto-slot-rotulo { display: none; }
+
+.btn-camera {
   display: block;
   width: 100%;
-  max-height: 240px;
-  object-fit: cover;
+  background: var(--steel);
+  color: #fff;
+  border: none;
+  padding: 15px;
   border-radius: var(--radius);
-  margin-top: 10px;
-  border: 1.5px solid var(--line);
+  font-size: 15.5px;
+  font-weight: 700;
+  cursor: pointer;
 }
+.btn-camera:active { opacity: 0.9; }
+
+/* --- câmera ao vivo (as 2 fotos numa tela só) --- */
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+.camera-video {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
+.camera-topo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+.camera-rotulo {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.camera-fechar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.camera-controles {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.camera-disparo {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #fff;
+  border: 5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.camera-disparo:active { transform: scale(0.94); }
 
 /* --- histórico --- */
 .secao-historico { margin-top: 28px; }
@@ -250,6 +367,10 @@ input[type="text"]:focus, textarea:focus {
   flex-shrink: 0;
   background: var(--paper-dim);
 }
+.item-historico-foto-vazia {
+  display: inline-block;
+  border: 1.5px dashed var(--line);
+}
 .item-historico-info {
   display: flex;
   flex-direction: column;
@@ -285,6 +406,35 @@ input[type="text"]:focus, textarea:focus {
   color: #fff;
   background: var(--green);
 }
+.carimbo-erro {
+  color: #fff;
+  background: var(--red);
+}
+
+/* item com falha de envio (destacado para o motorista notar) */
+.item-historico-erro {
+  border-color: var(--red);
+  background: #FCECEA;
+}
+.item-historico-info .item-historico-erro-msg {
+  color: var(--red);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: normal;
+}
+.btn-tentar {
+  align-self: flex-start;
+  margin-top: 4px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-tentar:active { opacity: 0.9; }
 
 /* --- rodapé --- */
 .rodape-discreto {
@@ -295,6 +445,7 @@ input[type="text"]:focus, textarea:focus {
   color: var(--ink-soft);
   font-size: 12px;
   text-decoration: none;
+  margin: 0 8px;
 }
 .rodape-discreto a:hover { text-decoration: underline; }
 
@@ -324,3 +475,61 @@ input[type="text"]:focus, textarea:focus {
   cursor: pointer;
 }
 .btn-enviar:active { opacity: 0.9; }
+
+/* --- relatório de desempenho (relatorio.html) --- */
+.topo-voltar {
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+.topo-voltar:hover { opacity: 1; }
+.relatorio-motorista {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin: 4px 0 16px;
+}
+.relatorio-motorista strong { color: var(--ink); }
+.relatorio-cards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.rel-card {
+  flex: 1;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+.rel-card-rotulo { font-size: 11.5px; color: var(--ink-soft); font-weight: 600; }
+.rel-card-num { font-size: 34px; font-weight: 800; color: var(--ink); line-height: 1.1; }
+.rel-card-sub { font-size: 11.5px; color: var(--ink-soft); }
+.relatorio-detalhe h2 { font-size: 15px; margin: 0 0 12px; }
+.rel-dia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+}
+.rel-dia-data { font-size: 13px; font-weight: 600; min-width: 84px; }
+.rel-dia-barra {
+  flex: 1;
+  height: 8px;
+  background: var(--paper-dim);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.rel-dia-barra-fill { display: block; height: 100%; background: var(--orange); border-radius: 4px; }
+.rel-dia-num { font-size: 13px; font-weight: 700; min-width: 24px; text-align: right; }
+.rel-vazio { color: var(--ink-soft); font-size: 13.5px; text-align: center; padding: 12px 0; }

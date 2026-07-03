@@ -46,21 +46,27 @@
     </div>
 
     <div class="campo">
-      <div class="eyebrow"><span class="num">03</span><label>Foto do pacote</label></div>
+      <div class="eyebrow"><span class="num">03</span><label>Fotos da entrega</label></div>
+      <div class="fotos-slots">
+        <button type="button" class="foto-slot" id="slotPacote">
+          <img class="foto-slot-img" id="fotoPacotePreview" alt="Foto do pacote">
+          <span class="foto-slot-rotulo">📦 Pacote</span>
+          <span class="foto-slot-check">✓</span>
+        </button>
+        <button type="button" class="foto-slot" id="slotFachada">
+          <img class="foto-slot-img" id="fotoFachadaPreview" alt="Foto da fachada">
+          <span class="foto-slot-rotulo">🏠 Fachada</span>
+          <span class="foto-slot-check">✓</span>
+        </button>
+      </div>
+      <button type="button" id="btnCamera" class="btn-camera">📷 Tirar as 2 fotos</button>
+      <!-- fallback: usado só se a câmera ao vivo não estiver disponível -->
       <input type="file" id="fotoPacoteInput" accept="image/*" capture="environment" class="hidden">
-      <label for="fotoPacoteInput" class="btn-foto"><span id="fotoPacoteRotulo">Tirar foto do pacote</span></label>
-      <img id="fotoPacotePreview" class="foto-preview hidden" alt="Prévia da foto do pacote">
-    </div>
-
-    <div class="campo">
-      <div class="eyebrow"><span class="num">04</span><label>Foto da fachada</label></div>
       <input type="file" id="fotoFachadaInput" accept="image/*" capture="environment" class="hidden">
-      <label for="fotoFachadaInput" class="btn-foto"><span id="fotoFachadaRotulo">Tirar foto da fachada</span></label>
-      <img id="fotoFachadaPreview" class="foto-preview hidden" alt="Prévia da foto da fachada">
     </div>
 
     <div class="campo">
-      <div class="eyebrow"><span class="num">05</span><label for="observacao">Observação (opcional)</label></div>
+      <div class="eyebrow"><span class="num">04</span><label for="observacao">Observação (opcional)</label></div>
       <textarea id="observacao" placeholder="Ex: entregue na portaria"></textarea>
     </div>
   </form>
@@ -74,9 +80,21 @@
   </div>
 
   <footer class="rodape-discreto">
+    <a href="./relatorio.html">📊 Meu desempenho</a>
     <a href="./admin.html" target="_blank" rel="noopener">Painel do administrador</a>
   </footer>
 </main>
+
+<div id="cameraOverlay" class="camera-overlay hidden">
+  <video id="cameraVideo" class="camera-video" playsinline autoplay muted></video>
+  <div class="camera-topo">
+    <button type="button" id="cameraFechar" class="camera-fechar" aria-label="Fechar câmera">✕</button>
+    <span id="cameraRotulo" class="camera-rotulo"></span>
+  </div>
+  <div class="camera-controles">
+    <button type="button" id="cameraDisparo" class="camera-disparo" aria-label="Tirar foto"></button>
+  </div>
+</div>
 
 <div class="barra-envio">
   <button type="submit" form="formEntrega" class="btn-enviar">Enviar comprovante</button>

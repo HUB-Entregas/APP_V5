@@ -7,17 +7,19 @@
 // Isso força o navegador a perceber que o service worker mudou e buscar
 // tudo de novo. Sem isso, mudanças em arquivos estáticos podem demorar
 // a aparecer para quem já instalou o app.
-const CACHE_NAME = 'comprovantes-shell-v7';
+const CACHE_NAME = 'comprovantes-shell-v11';
 const APP_SHELL = [
   './',
   './index.html',
   './login.html',
+  './relatorio.html',
   './admin.html',
   './styles.css',
   './admin.css',
   './config.js',
   './app.js',
   './login.js',
+  './relatorio.js',
   './admin.js',
   './manifest.json',
   './icons/icon-192.png',

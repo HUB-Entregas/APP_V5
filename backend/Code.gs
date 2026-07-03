@@ -18,6 +18,22 @@
 
 var TOKEN = 'HUB-ENTREGAS';
 var ADMIN_SENHA = 'ADMIN3917';
+
+// Senhas dos motoristas — ficam SÓ aqui no backend (não no config.js público).
+// A tela de login (login.html) envia nome + senha e o servidor confere abaixo.
+// Para adicionar/remover motorista: edite este mapa E a lista de nomes em
+// config.js (MOTORISTAS), e republique esta implantação.
+var MOTORISTAS = {
+  'Mello': '0327',
+  'Vinicius': '9205',
+  'Said': '4771',
+  'Matheus Silva': '5840',
+  'Joao': '1551',
+  'Thales': '5824',
+  'Bruno': '1654',
+  'Pedro': '3277'
+};
+
 var NOME_ABA = 'Entregas';
 var NOME_PASTA_DRIVE = 'Comprovantes de Entrega';
 var CABECALHO = ['Data/Hora', 'Motorista', 'Recebedor', 'Observações', 'Foto Pacote', 'Foto Fachada', 'ID', 'Finalizado'];
@@ -25,6 +41,10 @@ var CABECALHO = ['Data/Hora', 'Motorista', 'Recebedor', 'Observações', 'Foto P
 function doPost(e) {
   try {
     var dados = JSON.parse(e.postData.contents);
+
+    if (dados.acao === 'login') {
+      return verificarLogin(dados);
+    }
 
     if (dados.acao === 'finalizar') {
       return marcarFinalizado(dados);
@@ -66,6 +86,14 @@ function doPost(e) {
   } catch (err) {
     return responder({ status: 'error', message: String(err) });
   }
+}
+
+function verificarLogin(dados) {
+  var senhaCorreta = MOTORISTAS[dados.nome];
+  if (senhaCorreta && String(dados.senha) === String(senhaCorreta)) {
+    return responder({ status: 'ok' });
+  }
+  return responder({ status: 'error', message: 'Motorista ou senha incorretos.' });
 }
 
 function marcarFinalizado(dados) {
