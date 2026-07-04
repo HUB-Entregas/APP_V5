@@ -16,12 +16,12 @@
  * (lápis) > Nova versão > Implantar — senão as mudanças não valem.
  */
 
-var ADMIN_SENHA = 'ADMIN3917';
+var ADMIN_SENHA = 'ADMIN1739';
 
 // SEGREDO do servidor: usado para ASSINAR os tokens de sessão (login).
 // Fica SÓ aqui no backend, nunca no app. TROQUE por um texto longo e
 // aleatório (ex.: 40+ caracteres). Se trocar depois, todos precisam relogar.
-var SEGREDO = 'TROQUE_POR_UM_SEGREDO_LONGO_E_ALEATORIO_9f3k2xQ';
+var SEGREDO = 'jbbfaebfibwfieubfiudsbiubcowieh8u4fiurwlkqwlmnfcxiubviubrygebskudbfiwubr0293u08947y5749837';
 
 // Proteção contra força bruta (login do motorista e do admin).
 var MAX_FALHAS = 5;                 // tentativas erradas antes de bloquear
@@ -43,7 +43,9 @@ var MOTORISTAS = {
   'Joao': '1551',
   'Thales': '5824',
   'Bruno': '1654',
-  'Pedro': '3277'
+  'Carlos': '6416',
+  'Pedro': '3277',
+  'Adrian': '6942'
 };
 
 var NOME_ABA = 'Entregas';
