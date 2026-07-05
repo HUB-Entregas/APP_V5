@@ -434,6 +434,31 @@ function atualizarRotuloCamera() {
   const indice = cameraTotal - cameraFila.length + 1;
   const passo = cameraTotal > 1 ? `Foto ${indice} de ${cameraTotal} — ` : '';
   el('cameraRotulo').textContent = `${passo}${NOME_FOTO[tipo]}`;
+  atualizarProgressoCamera();
+}
+
+// Chips 📦/🏠 no topo da câmera: o ATUAL pulsa em amarelo; o já tirado mostra
+// a miniatura real + ✓. Só aparece quando a sessão é das 2 fotos.
+function atualizarProgressoCamera() {
+  const strip = el('cameraProgresso');
+  if (cameraTotal < 2) { strip.classList.add('hidden'); return; }
+  strip.classList.remove('hidden');
+  [['pacote', 'progPacote', 'progPacoteImg'], ['fachada', 'progFachada', 'progFachadaImg']].forEach(([tipo, idChip, idImg]) => {
+    const chip = el(idChip);
+    const feita = !cameraFila.includes(tipo); // já saiu da fila = já capturada
+    chip.classList.toggle('cam-prog-feita', feita);
+    chip.classList.toggle('cam-prog-atual', cameraFila[0] === tipo);
+    el(idImg).src = feita ? (tipo === 'pacote' ? fotoPacoteBase64 : fotoFachadaBase64) : '';
+  });
+}
+
+// piscar branco rápido — feedback imediato de que a foto foi capturada
+let blinkTimer = null;
+function piscarCaptura() {
+  const blink = el('cameraBlink');
+  blink.classList.remove('hidden');
+  clearTimeout(blinkTimer);
+  blinkTimer = setTimeout(() => blink.classList.add('hidden'), 250);
 }
 
 function capturarFrameComprimido(video, maxLargura = 1400, qualidade = 0.72) {
@@ -458,8 +483,14 @@ function dispararFoto() {
 
   const tipo = cameraFila.shift();
   aplicarFoto(tipo, capturarFrameComprimido(video));
-  if (cameraFila.length === 0) fecharCamera();
-  else atualizarRotuloCamera();
+  piscarCaptura();
+  if (cameraFila.length === 0) {
+    // deixa o motorista VER o ✓ da última foto antes de fechar
+    atualizarProgressoCamera();
+    setTimeout(fecharCamera, 350);
+  } else {
+    atualizarRotuloCamera();
+  }
 }
 
 function fecharCamera() {
@@ -473,6 +504,8 @@ function fecharCamera() {
   el('cameraOverlay').classList.add('hidden');
   el('cameraZoomWrap').classList.add('hidden');
   el('focoIndicador').classList.add('hidden');
+  el('cameraProgresso').classList.add('hidden');
+  el('cameraBlink').classList.add('hidden');
   cameraFila = [];
 }
 
@@ -669,6 +702,30 @@ async function atualizarStatusConexao() {
     dot.className = 'dot dot-online';
     texto.textContent = 'Online — sincronizado';
   }
+
+  atualizarBotaoSync(pendentes, comProblema);
+}
+
+// Botão ÚNICO de sincronização: reenvia tudo (inclusive os com erro) e mostra
+// a situação atual na própria cara do botão.
+function atualizarBotaoSync(pendentes, comProblema) {
+  const botao = el('btnSincronizar');
+  botao.classList.remove('sync-erro', 'sync-ok');
+  if (sincronizando) {
+    botao.disabled = true;
+    botao.textContent = 'Sincronizando…';
+  } else if (comProblema > 0) {
+    botao.disabled = false;
+    botao.classList.add('sync-erro');
+    botao.textContent = `⚠️ Tentar de novo (${pendentes})`;
+  } else if (pendentes > 0) {
+    botao.disabled = false;
+    botao.textContent = `🔄 Sincronizar (${pendentes})`;
+  } else {
+    botao.disabled = true;
+    botao.classList.add('sync-ok');
+    botao.textContent = '✓ Tudo enviado';
+  }
 }
 
 // ---------- histórico ----------
@@ -707,35 +764,26 @@ async function renderHistorico() {
       <div class="item-historico-info">
         <strong>${escapeHtml(r.recebedor)}</strong>
         <span>${r.empresa ? `<span class="tag-empresa tag-empresa-${escapeHtml(String(r.empresa).toLowerCase())}">${escapeHtml(r.empresa)}</span>` : ''}${escapeHtml(r.motorista)} · ${formatarData(r.timestamp)}</span>
-        ${comErro(r) ? `<span class="item-historico-erro-msg">Falha ao enviar: ${escapeHtml(r.ultimoErro)}</span>
-        <button type="button" class="btn-tentar" data-id="${escapeHtml(r.id)}">Tentar de novo</button>` : ''}
+        ${comErro(r) ? `<span class="item-historico-erro-msg">Falha: ${escapeHtml(r.ultimoErro)}</span>` : ''}
       </div>
       ${carimboStatus(r)}
     </div>`).join('');
 }
 
+// Um clique reenvia TUDO: zera o contador de falhas dos itens em erro (para
+// eles voltarem à fila com força total) e sincroniza todos os pendentes.
 async function handleSincronizarClick() {
-  const botao = el('btnSincronizar');
-  botao.disabled = true;
-  const textoOriginal = botao.textContent;
-  botao.textContent = 'Sincronizando…';
-  await sincronizarPendentes();
-  await renderHistorico();
-  botao.disabled = false;
-  botao.textContent = textoOriginal;
-}
-
-async function tentarNovamente(id) {
   const registros = await listarComprovantesLocais();
-  const registro = registros.find((r) => r.id === id);
-  if (!registro || registro.status === 'enviado') return;
-  // zera o contador para dar feedback imediato (sai do estado de "ERRO")
-  registro.tentativas = 0;
-  registro.ultimoErro = '';
-  await salvarComprovanteLocal(registro);
+  for (const r of registros) {
+    if (r.status === 'pendente' && (r.tentativas || 0) > 0) {
+      r.tentativas = 0;
+      r.ultimoErro = '';
+      await salvarComprovanteLocal(r);
+    }
+  }
   await renderHistorico();
-  await atualizarStatusConexao();
-  sincronizarPendentes();
+  await sincronizarPendentes(); // atualiza o botão/status no início e no fim
+  await renderHistorico();
 }
 
 // ---------- inicialização ----------
@@ -781,12 +829,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   el('formEntrega').addEventListener('submit', handleSubmit);
   el('btnSincronizar').addEventListener('click', handleSincronizarClick);
-
-  // delegação: botão "Tentar de novo" nos itens em erro
-  el('listaHistorico').addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-tentar');
-    if (btn) tentarNovamente(btn.dataset.id);
-  });
 
   window.addEventListener('online', () => { sincronizarPendentes(); });
   window.addEventListener('offline', () => { atualizarStatusConexao(); });

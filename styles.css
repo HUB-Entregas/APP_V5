@@ -362,6 +362,89 @@ input[type="text"]:focus, textarea:focus {
   box-shadow: 0 0 12px rgba(245, 197, 24, 0.7);
 }
 
+/* progresso das 2 fotos dentro da câmera (qual já foi, qual é a atual) */
+.camera-progresso {
+  position: absolute;
+  top: 78px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 2;
+}
+.cam-prog {
+  position: relative;
+  width: 96px;
+  height: 64px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cam-prog-rotulo {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+.cam-prog-img {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cam-prog-check {
+  display: none;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+/* a foto ATUAL pulsa em amarelo — é nela que o disparador vai */
+.cam-prog-atual {
+  border-color: #F5C518;
+  animation: progPulso 1.1s ease-in-out infinite;
+}
+@keyframes progPulso {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.55); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 197, 24, 0); }
+}
+/* foto já tirada: mostra a miniatura real + selo verde */
+.cam-prog-feita { border-color: var(--green); animation: none; }
+.cam-prog-feita .cam-prog-img { display: block; }
+.cam-prog-feita .cam-prog-check { display: flex; }
+.cam-prog-feita .cam-prog-rotulo { display: none; }
+
+/* piscar branco ao capturar (feedback instantâneo de que a foto saiu) */
+.camera-blink {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  pointer-events: none;
+  z-index: 3;
+  animation: blinkFoto 0.22s ease-out forwards;
+}
+@keyframes blinkFoto {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
 /* barra de zoom (aparece só quando o aparelho suporta) */
 .camera-zoom {
   position: absolute;
@@ -439,16 +522,26 @@ input[type="text"]:focus, textarea:focus {
   font-size: 15px;
   margin: 0;
 }
+/* botão ÚNICO de sincronização — muda de cara conforme a situação */
 #btnSincronizar {
-  background: none;
-  border: 1.5px solid var(--line);
-  color: var(--steel);
-  padding: 7px 12px;
+  border: none;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  background: var(--steel);
+  color: #fff;
+  white-space: nowrap;
 }
+#btnSincronizar.sync-erro { background: var(--red); }
+#btnSincronizar.sync-ok {
+  background: none;
+  border: 1.5px solid var(--line);
+  color: var(--ink-soft);
+  cursor: default;
+}
+#btnSincronizar:disabled { opacity: 0.75; }
 .historico-vazio {
   color: var(--ink-soft);
   font-size: 13.5px;
@@ -458,16 +551,16 @@ input[type="text"]:focus, textarea:focus {
 .item-historico {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #fff;
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
-  padding: 9px;
-  margin-bottom: 8px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
 }
 .item-historico-foto {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
@@ -526,21 +619,10 @@ input[type="text"]:focus, textarea:focus {
   color: var(--red);
   font-size: 11.5px;
   font-weight: 600;
-  white-space: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.btn-tentar {
-  align-self: flex-start;
-  margin-top: 4px;
-  background: var(--red);
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.btn-tentar:active { opacity: 0.9; }
 
 /* --- rodapé --- */
 .rodape-discreto {

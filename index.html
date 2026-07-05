@@ -53,6 +53,7 @@
 
     <div class="campo">
       <div class="eyebrow"><span class="num">04</span><label>Fotos da entrega</label></div>
+      <button type="button" id="btnCamera" class="btn-camera">📷 Tirar as 2 fotos</button>
       <div class="fotos-slots">
         <button type="button" class="foto-slot" id="slotPacote">
           <img class="foto-slot-img" id="fotoPacotePreview" alt="Foto do pacote">
@@ -65,7 +66,6 @@
           <span class="foto-slot-check">✓</span>
         </button>
       </div>
-      <button type="button" id="btnCamera" class="btn-camera">📷 Tirar as 2 fotos</button>
       <!-- fallback: usado só se a câmera ao vivo não estiver disponível -->
       <input type="file" id="fotoPacoteInput" accept="image/*" capture="environment" class="hidden">
       <input type="file" id="fotoFachadaInput" accept="image/*" capture="environment" class="hidden">
@@ -98,10 +98,23 @@
     </div>
   </div>
   <div id="focoIndicador" class="foco-indicador hidden"></div>
+  <div id="cameraProgresso" class="camera-progresso hidden">
+    <div class="cam-prog" id="progPacote">
+      <img class="cam-prog-img" id="progPacoteImg" alt="">
+      <span class="cam-prog-rotulo">📦 Pacote</span>
+      <span class="cam-prog-check">✓</span>
+    </div>
+    <div class="cam-prog" id="progFachada">
+      <img class="cam-prog-img" id="progFachadaImg" alt="">
+      <span class="cam-prog-rotulo">🏠 Fachada</span>
+      <span class="cam-prog-check">✓</span>
+    </div>
+  </div>
   <div id="cameraZoomWrap" class="camera-zoom hidden">
     <input type="range" id="cameraZoom" aria-label="Zoom">
     <span id="cameraZoomValor" class="camera-zoom-valor">1x</span>
   </div>
+  <div id="cameraBlink" class="camera-blink hidden"></div>
   <div class="camera-controles">
     <button type="button" id="cameraDisparo" class="camera-disparo" aria-label="Tirar foto"></button>
   </div>
